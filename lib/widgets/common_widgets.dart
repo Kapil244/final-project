@@ -157,13 +157,14 @@ class OrangeButton extends StatelessWidget {
 
   const OrangeButton({
     super.key,
-    required this.text,
+    required String text,
+    String? label,
     this.onPressed,
     this.isOutlined = false,
     this.width,
     this.padding,
     this.icon,
-  });
+  }) : text = label ?? text;
 
   @override
   Widget build(BuildContext context) {
@@ -241,14 +242,18 @@ class StatChip extends StatelessWidget {
 
 class SectionHeader extends StatelessWidget {
   final String title;
+  final String? action;
   final String? actionText;
   final VoidCallback? onAction;
+  final Widget? trailing;
 
   const SectionHeader({
     super.key,
     required this.title,
+    this.action,
     this.actionText,
     this.onAction,
+    this.trailing,
   });
 
   @override
@@ -256,15 +261,25 @@ class SectionHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title,
-            style: const TextStyle(
-                color: AppTheme.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 16)),
-        if (actionText != null)
+        Expanded(
+          child: Row(
+            children: [
+              Text(title,
+                  style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16)),
+              if (trailing != null) ...[
+                const SizedBox(width: 8),
+                trailing!,
+              ],
+            ],
+          ),
+        ),
+        if (action != null || actionText != null)
           GestureDetector(
             onTap: onAction,
-            child: Text(actionText!,
+            child: Text(action ?? actionText!,
                 style: const TextStyle(
                     color: AppTheme.primary,
                     fontSize: 13,
@@ -294,19 +309,184 @@ class DifficultyBadge extends StatelessWidget {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: _color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: _color.withValues(alpha: 0.4)),
+        color: _color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: _color.withValues(alpha: 0.3)),
       ),
       child: Text(
-        difficulty,
-        style:
-            TextStyle(color: _color, fontSize: 10, fontWeight: FontWeight.bold),
+        difficulty.toUpperCase(),
+        style: TextStyle(
+          color: _color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
 }
+
+class IFCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+  final Color? color;
+  final Border? border;
+
+  const IFCard({
+    super.key,
+    required this.child,
+    this.padding,
+    this.color,
+    this.border,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color ?? AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: border ?? Border.all(color: AppColors.border),
+      ),
+      child: child,
+    );
+  }
+}
+
+class IFProgressBar extends StatelessWidget {
+  final double progress;
+  final Color color;
+  final double height;
+
+  const IFProgressBar({
+    super.key,
+    required this.progress,
+    this.color = AppColors.primary,
+    this.height = 6,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          height: height,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppColors.border.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(height / 2),
+          ),
+        ),
+        FractionallySizedBox(
+          widthFactor: progress.clamp(0.0, 1.0),
+          child: Container(
+            height: height,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(height / 2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class IFChip extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const IFChip({super.key, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.13),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+            color: color, fontSize: 10, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+class NewBadge extends StatelessWidget {
+  const NewBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: const Text(
+        'NEW',
+        style: TextStyle(
+            color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+class IFDivider extends StatelessWidget {
+  const IFDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Divider(color: AppColors.border, height: 1),
+    );
+  }
+}
+
+class IFAvatar extends StatelessWidget {
+  final String label;
+  final Color color;
+  final double size;
+
+  const IFAvatar({
+    super.key,
+    required this.label,
+    required this.color,
+    this.size = 32,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.background, width: 2),
+      ),
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: size * 0.35,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
