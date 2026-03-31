@@ -17,44 +17,98 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _otpController = TextEditingController();
   bool _isLogin = true;
+  bool _isPhoneMode = false;
+  bool _isOtpSent = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
+    _phoneController.dispose();
+    _otpController.dispose();
     super.dispose();
   }
 
   void _handleAuth() async {
     final provider = context.read<AppProvider>();
+    bool success = false;
+    
     if (_isLogin) {
-      await provider.loginWithEmail(
+      success = await provider.loginWithEmail(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
     } else {
-      await provider.signUpWithEmail(
+      success = await provider.signUpWithEmail(
         _emailController.text.trim(),
         _passwordController.text.trim(),
         _nameController.text.trim(),
       );
+      
+      if (success) {
+        setState(() {
+          _isLogin = true;
+          _passwordController.clear();
+        });
+      }
     }
 
     if (!mounted) return;
+    
     if (provider.errorMessage != null) {
-      final isHint = provider.errorMessage!.contains('confirm') || provider.errorMessage!.contains('Check your inbox');
+      final isHint = provider.errorMessage!.contains('confirm') || 
+                     provider.errorMessage!.contains('Check your inbox') ||
+                     provider.errorMessage!.contains('Account created');
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(provider.errorMessage!),
-          backgroundColor: isHint ? Colors.blue : AppTheme.error,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+      _showSnackBar(provider.errorMessage!, isHint ? Colors.blue : AppTheme.error);
+    }
+  }
+
+  void _handlePhoneAuth() async {
+    final provider = context.read<AppProvider>();
+    bool success = false;
+    
+    if (!_isOtpSent) {
+      if (_phoneController.text.trim().isEmpty) {
+        _showSnackBar('Please enter your phone number', AppTheme.error);
+        return;
+      }
+      success = await provider.sendOtp(_phoneController.text.trim());
+      if (success) {
+        setState(() => _isOtpSent = true);
+        _showSnackBar('OTP sent! Please check your messages.', Colors.blue);
+      }
+    } else {
+      if (_otpController.text.trim().isEmpty) {
+        _showSnackBar('Please enter the OTP', AppTheme.error);
+        return;
+      }
+      success = await provider.verifyOtp(
+        _phoneController.text.trim(),
+        _otpController.text.trim(),
       );
     }
+
+    if (!mounted) return;
+    
+    if (provider.errorMessage != null) {
+      _showSnackBar(provider.errorMessage!, AppTheme.error);
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
@@ -154,8 +208,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     FadeIn(
                       delay: const Duration(milliseconds: 500),
                       child: Text(
-                        _isLogin ? 'Forge Your Best Self' : 'Start Your Journey',
-                        style: TextStyle(
+                        _isPhoneMode 
+                          ? 'Quick & Secure Access' 
+                          : (_isLogin ? 'Forge Your Best Self' : 'Start Your Journey'),
+                        style: const TextStyle(
                           color: AppTheme.textSecondary,
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -163,11 +219,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 40),
                     
-                    // Glassmorphism Card
+                    // Auth Mode Switcher
                     FadeInUp(
                       delay: const Duration(milliseconds: 600),
+                      child: _AuthTabSwitcher(
+                        isPhoneMode: _isPhoneMode,
+                        onChanged: (val) => setState(() {
+                          _isPhoneMode = val;
+                          _isOtpSent = false;
+                        }),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 24),
+
+                    // Glassmorphism Card
+                    FadeInUp(
+                      delay: const Duration(milliseconds: 700),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(30),
                         child: BackdropFilter(
@@ -185,62 +255,69 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                if (!_isLogin) ...[
+                                if (_isPhoneMode) ...[
                                   _buildTextField(
-                                    controller: _nameController,
-                                    label: 'FULL NAME',
-                                    hint: 'John Doe',
-                                    icon: Icons.person_outline,
+                                    controller: _phoneController,
+                                    label: 'PHONE NUMBER',
+                                    hint: '+1 234 567 8900',
+                                    icon: Icons.phone_android,
+                                    keyboardType: TextInputType.phone,
+                                  ),
+                                  if (_isOtpSent) ...[
+                                    const SizedBox(height: 20),
+                                    _buildTextField(
+                                      controller: _otpController,
+                                      label: 'OTP CODE',
+                                      hint: '123456',
+                                      icon: Icons.lock_clock,
+                                      keyboardType: TextInputType.number,
+                                    ),
+                                  ],
+                                  const SizedBox(height: 32),
+                                  OrangeButton(
+                                    text: provider.isLoading 
+                                      ? 'PLEASE WAIT...' 
+                                      : (_isOtpSent ? 'VERIFY & LOGIN' : 'SEND OTP'),
+                                    onPressed: provider.isLoading ? () {} : _handlePhoneAuth,
+                                  ),
+                                  if (_isOtpSent)
+                                    TextButton(
+                                      onPressed: () => setState(() => _isOtpSent = false),
+                                      child: const Text('Resend Code', style: TextStyle(color: AppTheme.primary)),
+                                    ),
+                                ] else ...[
+                                  if (!_isLogin) ...[
+                                    _buildTextField(
+                                      controller: _nameController,
+                                      label: 'FULL NAME',
+                                      hint: 'John Doe',
+                                      icon: Icons.person_outline,
+                                    ),
+                                    const SizedBox(height: 20),
+                                  ],
+                                  _buildTextField(
+                                    controller: _emailController,
+                                    label: 'EMAIL ADDRESS',
+                                    hint: 'alex@ironforge.com',
+                                    icon: Icons.alternate_email,
+                                    keyboardType: TextInputType.emailAddress,
                                   ),
                                   const SizedBox(height: 20),
+                                  _buildTextField(
+                                    controller: _passwordController,
+                                    label: 'PASSWORD',
+                                    hint: '••••••••',
+                                    icon: Icons.lock_outline,
+                                    isPassword: true,
+                                  ),
+                                  const SizedBox(height: 32),
+                                  OrangeButton(
+                                    text: provider.isLoading 
+                                      ? 'PLEASE WAIT...' 
+                                      : (_isLogin ? 'LOGIN' : 'CREATE ACCOUNT'),
+                                    onPressed: provider.isLoading ? () {} : _handleAuth,
+                                  ),
                                 ],
-                                _buildTextField(
-                                  controller: _emailController,
-                                  label: 'EMAIL ADDRESS',
-                                  hint: 'alex@ironforge.com',
-                                  icon: Icons.alternate_email,
-                                ),
-                                const SizedBox(height: 20),
-                                _buildTextField(
-                                  controller: _passwordController,
-                                  label: 'PASSWORD',
-                                  hint: '••••••••',
-                                  icon: Icons.lock_outline,
-                                  isPassword: true,
-                                ),
-                                const SizedBox(height: 32),
-                                OrangeButton(
-                                  text: provider.isLoading 
-                                    ? 'PLEASE WAIT...' 
-                                    : (_isLogin ? 'LOGIN' : 'CREATE ACCOUNT'),
-                                  onPressed: provider.isLoading ? () {} : _handleAuth,
-                                ),
-                                const SizedBox(height: 24),
-                                Row(
-                                  children: [
-                                    Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                      child: Text(
-                                        'OR CONTINUE WITH',
-                                        style: TextStyle(
-                                          color: AppTheme.textMuted,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 1,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
-                                  ],
-                                ),
-                                const SizedBox(height: 24),
-                                // Premium Google Login Button
-                                _GoogleSignInButton(
-                                  onPressed: provider.isLoading 
-                                    ? () {} 
-                                    : () => provider.loginWithGoogle(),
-                                ),
                               ],
                             ),
                           ),
@@ -249,29 +326,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     
                     const SizedBox(height: 32),
-                    FadeIn(
-                      delay: const Duration(milliseconds: 1000),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            _isLogin ? "Don't have an account? " : "Already have an account? ",
-                            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                          ),
-                          TextButton(
-                            onPressed: () => setState(() => _isLogin = !_isLogin),
-                            child: Text(
-                              _isLogin ? 'Sign Up' : 'Login',
-                              style: const TextStyle(
-                                color: AppTheme.primary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                    if (!_isPhoneMode)
+                      FadeIn(
+                        delay: const Duration(milliseconds: 1000),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _isLogin ? "Don't have an account? " : "Already have an account? ",
+                              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                            ),
+                            TextButton(
+                              onPressed: () => setState(() => _isLogin = !_isLogin),
+                              child: Text(
+                                _isLogin ? 'Sign Up' : 'Login',
+                                style: const TextStyle(
+                                  color: AppTheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -298,6 +376,7 @@ class _LoginScreenState extends State<LoginScreen> {
     required String hint,
     required IconData icon,
     bool isPassword = false,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,6 +400,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: TextField(
             controller: controller,
             obscureText: isPassword,
+            keyboardType: keyboardType,
             style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
             decoration: InputDecoration(
               prefixIcon: Icon(icon, color: AppTheme.primary.withValues(alpha: 0.7), size: 20),
@@ -336,57 +416,77 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-class _GoogleSignInButton extends StatelessWidget {
-  final VoidCallback onPressed;
+class _AuthTabSwitcher extends StatelessWidget {
+  final bool isPhoneMode;
+  final Function(bool) onChanged;
 
-  const _GoogleSignInButton({required this.onPressed});
+  const _AuthTabSwitcher({
+    required this.isPhoneMode,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(15),
-      child: Container(
-        height: 55,
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _TabButton(
+              title: 'Email',
+              isActive: !isPhoneMode,
+              onTap: () => onChanged(false),
+            ),
+          ),
+          Expanded(
+            child: _TabButton(
+              title: 'Phone',
+              isActive: isPhoneMode,
+              onTap: () => onChanged(true),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TabButton extends StatelessWidget {
+  final String title;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _TabButton({
+    required this.title,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: isActive ? AppTheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Using a simple custom Google logo representation with colors
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const Icon(Icons.g_mobiledata, color: Colors.blue, size: 28),
-              ],
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: isActive ? Colors.white : AppTheme.textSecondary,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
             ),
-            const SizedBox(width: 12),
-            const Text(
-              'Sign in with Google',
-              style: TextStyle(
-                color: Colors.black87,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

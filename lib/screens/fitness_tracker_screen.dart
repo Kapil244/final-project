@@ -319,11 +319,11 @@ class _WaterGlassGrid extends StatelessWidget {
           )),
         ),
         const SizedBox(height: 12),
-        Row(
+        const Row(
           children: [
-            const Icon(Icons.info_outline, size: 14, color: AppTheme.primary),
-            const SizedBox(width: 6),
-            const Expanded(
+            Icon(Icons.info_outline, size: 14, color: AppTheme.primary),
+            SizedBox(width: 6),
+            Expanded(
               child: Text(
                 'AI can suggest any trends today.',
                 style: TextStyle(color: AppTheme.textMuted, fontSize: 12),

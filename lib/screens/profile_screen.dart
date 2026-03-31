@@ -91,7 +91,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(child: _StatCard(label: 'Calories', value: '${provider.caloriesBurned}k')),
                 const SizedBox(width: 12),
-                Expanded(child: _StatCard(label: 'Streak', value: '5🔥')),
+                const Expanded(child: _StatCard(label: 'Streak', value: '5🔥')),
               ],
             ),
             const SizedBox(height: 16),
@@ -141,7 +141,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             // Settings menu
-            SurfaceCard(
+            const SurfaceCard(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
@@ -222,7 +222,7 @@ class _SettingsItem extends StatelessWidget {
           onTap: () {},
         ),
         if (showDivider)
-          Divider(height: 1, color: AppTheme.surfaceLight, indent: 16, endIndent: 16),
+          const Divider(height: 1, color: AppTheme.surfaceLight, indent: 16, endIndent: 16),
       ],
     );
   }

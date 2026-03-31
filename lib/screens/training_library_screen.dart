@@ -295,11 +295,11 @@ class _ProgramCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.calendar_today_outlined, size: 11, color: AppTheme.textMuted),
+                      const Icon(Icons.calendar_today_outlined, size: 11, color: AppTheme.textMuted),
                       const SizedBox(width: 3),
                       Text('${program.weeks}w', style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
                       const SizedBox(width: 8),
-                      Icon(Icons.local_fire_department_outlined, size: 11, color: AppTheme.textMuted),
+                      const Icon(Icons.local_fire_department_outlined, size: 11, color: AppTheme.textMuted),
                       const SizedBox(width: 3),
                       Text('${program.calories}', style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
                     ],

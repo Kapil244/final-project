@@ -447,8 +447,8 @@ class IFDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 14),
       child: Divider(color: AppColors.border, height: 1),
     );
   }

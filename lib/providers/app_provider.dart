@@ -88,16 +88,19 @@ class AppProvider extends ChangeNotifier {
     _errorMessage = null;
     try {
       final response = await _supabase.auth.signUp(email: email, password: password);
+      
       if (response.user != null) {
-        await _supabase.from('profiles').insert({
+        // Create profile in the database
+        await _supabase.from('profiles').upsert({
           'id': response.user!.id,
           'full_name': name,
         });
         
-        // If email confirmation is enabled, notify the user
+        // If email confirmation is enabled, we notify the user
         if (response.session == null) {
           _errorMessage = 'Account created! Please check your email to confirm your account.';
-          return false; // Return false so UI can show the message
+          // Still return true because the registration part succeeded
+          return true; 
         }
       }
       return true;
@@ -109,20 +112,50 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> loginWithGoogle() async {
+
+  Future<bool> sendOtp(String phone) async {
+    if (phone.isEmpty) {
+      _errorMessage = 'Phone number cannot be empty';
+      notifyListeners();
+      return false;
+    }
+
     _setLoading(true);
     _errorMessage = null;
     try {
-      await _supabase.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: 'io.supabase.ironforge://login-callback/',
+      // Sanitize phone number (ensure + prefix)
+      final sanitizedPhone = phone.startsWith('+') ? phone : '+$phone';
+      await _supabase.auth.signInWithOtp(phone: sanitizedPhone);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> verifyOtp(String phone, String token) async {
+    if (phone.isEmpty || token.isEmpty) {
+      _errorMessage = 'Phone number and OTP are required';
+      notifyListeners();
+      return false;
+    }
+
+    _setLoading(true);
+    _errorMessage = null;
+    try {
+      final sanitizedPhone = phone.startsWith('+') ? phone : '+$phone';
+      await _supabase.auth.verifyOTP(
+        phone: sanitizedPhone,
+        token: token,
+        type: OtpType.sms,
       );
       return true;
     } catch (e) {
       _errorMessage = e.toString();
       return false;
     } finally {
-      // OAuth flow will redirect, but we clear loading just in case
       _setLoading(false);
     }
   }

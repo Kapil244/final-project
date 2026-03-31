@@ -9,18 +9,18 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            const HomeHeader(),
+            HomeHeader(),
             Expanded(
               child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
+                physics: BouncingScrollPhysics(),
                 child: Column(
-                  children: const [
+                  children: [
                     WelcomeSection(),
                     AICoachBanner(),
                     TodayWorkoutCard(),
@@ -43,7 +43,7 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const HomeBottomNav(),
+      bottomNavigationBar: HomeBottomNav(),
     );
   }
 }
@@ -69,7 +69,7 @@ class HomeHeader extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Good Morning,',
+              const Text('Good Morning,',
                   style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
               Text(user.name,
                   style: const TextStyle(
@@ -127,7 +127,7 @@ class WelcomeSection extends StatelessWidget {
                   fontSize: 24,
                   fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text("You've hit your goals 5 days in a row!",
+          const Text("You've hit your goals 5 days in a row!",
               style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
           const SizedBox(height: 12),
           Row(
@@ -258,7 +258,7 @@ class TodayWorkoutCard extends StatelessWidget {
                               fontWeight: FontWeight.bold)),
                       const SizedBox(height: 6),
                       Text(workout.description,
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: AppColors.textMuted, fontSize: 13),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
@@ -267,7 +267,7 @@ class TodayWorkoutCard extends StatelessWidget {
                         children: [
                           _WorkoutStat(icon: Icons.timer_outlined, label: '${workout.duration} min'),
                           const SizedBox(width: 16),
-                          _WorkoutStat(icon: Icons.fitness_center_outlined, label: '12 Sets'),
+                          const _WorkoutStat(icon: Icons.fitness_center_outlined, label: '12 Sets'),
                           const Spacer(),
                           const OrangeButton(
                             text: 'Start',
@@ -301,7 +301,7 @@ class _WorkoutStat extends StatelessWidget {
       children: [
         Icon(icon, size: 14, color: AppColors.textMuted),
         const SizedBox(width: 4),
-        Text(label, style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+        Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
       ],
     );
   }
@@ -312,8 +312,8 @@ class QuickActionsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -485,14 +485,14 @@ class _ActivityCard extends StatelessWidget {
             children: [
               Icon(icon, size: 16, color: color),
               const SizedBox(width: 6),
-              Text(label, style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+              Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
             ],
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-              Text('Goal: $goal', style: TextStyle(color: AppColors.textMuted, fontSize: 10)),
+              Text('Goal: $goal', style: const TextStyle(color: AppColors.textMuted, fontSize: 10)),
             ],
           ),
           IFProgressBar(progress: progress, color: color, height: 4),
@@ -533,14 +533,14 @@ class WeeklyChartSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 0),
       child: IFCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeader(title: 'Weekly Progress', trailing: Text('84%', style: TextStyle(color: AppColors.green, fontWeight: FontWeight.bold))),
-            const SizedBox(height: 20),
+            SectionHeader(title: 'Weekly Progress', trailing: Text('84%', style: TextStyle(color: AppColors.green, fontWeight: FontWeight.bold))),
+            SizedBox(height: 20),
             SizedBox(
               height: 180,
               child: Row(
@@ -596,7 +596,7 @@ class _Bar extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text(label, style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+        Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
       ],
     );
   }
@@ -618,17 +618,17 @@ class MuscleHeatmapSection extends StatelessWidget {
           IFCard(
             child: Row(
               children: [
-                Expanded(
+                const Expanded(
                   flex: 4,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _MuscleIndicator(label: 'Chest', progress: 0.85, color: AppColors.red),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14),
                       _MuscleIndicator(label: 'Back', progress: 0.65, color: AppColors.orange),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14),
                       _MuscleIndicator(label: 'Legs', progress: 0.45, color: AppColors.green),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14),
                       _MuscleIndicator(label: 'Arms', progress: 0.30, color: AppColors.blue),
                     ],
                   ),
@@ -909,13 +909,13 @@ class UpcomingScheduleSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'Upcoming Classes', action: 'Schedule Detail →'),
-          const SizedBox(height: 12),
+          SectionHeader(title: 'Upcoming Classes', action: 'Schedule Detail →'),
+          SizedBox(height: 12),
           IFCard(
             child: Column(
               children: [
@@ -926,7 +926,7 @@ class UpcomingScheduleSection extends StatelessWidget {
                   color: AppColors.orange,
                   isActive: true,
                 ),
-                const Divider(color: AppColors.border, height: 24),
+                Divider(color: AppColors.border, height: 24),
                 _ScheduleItem(
                   time: '19:30',
                   title: 'Yoga Flow',
@@ -934,7 +934,7 @@ class UpcomingScheduleSection extends StatelessWidget {
                   color: AppColors.skyBlue,
                   isActive: false,
                 ),
-                const Divider(color: AppColors.border, height: 24),
+                Divider(color: AppColors.border, height: 24),
                 _ScheduleItem(
                   time: '20:45',
                   title: 'HIIT Intensive',
@@ -1006,20 +1006,20 @@ class LeaderboardSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'Community Leaderboard', action: 'Full Ranking →'),
-          const SizedBox(height: 12),
+          SectionHeader(title: 'Community Leaderboard', action: 'Full Ranking →'),
+          SizedBox(height: 12),
           IFCard(
             child: Column(
               children: [
                 _LeaderboardItem(rank: 1, name: 'Sarah Jenkins', points: '12,450', avatarUrl: null, color: AppColors.orange),
-                const Divider(color: AppColors.border, height: 20),
+                Divider(color: AppColors.border, height: 20),
                 _LeaderboardItem(rank: 2, name: 'Kevin Durant', points: '11,820', avatarUrl: null, color: AppColors.blue),
-                const Divider(color: AppColors.border, height: 20),
+                Divider(color: AppColors.border, height: 20),
                 _LeaderboardItem(rank: 3, name: 'Michael Chen', points: '10,950', avatarUrl: null, color: AppColors.green),
               ],
             ),
@@ -1240,17 +1240,17 @@ class AchievementsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'Recent Achievements', action: 'Showcase →'),
-          const SizedBox(height: 12),
+          SectionHeader(title: 'Recent Achievements', action: 'Showcase →'),
+          SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: const [
+              children: [
                 _AchievementBadge(icon: Icons.bolt, color: AppColors.orange, label: 'Early Bird'),
                 SizedBox(width: 16),
                 _AchievementBadge(icon: Icons.favorite, color: AppColors.red, label: 'Heart Hero'),
@@ -1302,9 +1302,9 @@ class HomeBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: const Border(top: BorderSide(color: AppColors.border)),
+        border: Border(top: BorderSide(color: AppColors.border)),
       ),
       child: BottomNavigationBar(
         elevation: 0,

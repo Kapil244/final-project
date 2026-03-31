@@ -109,11 +109,11 @@ class ActivityGraph extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _LegendItem(color: AppTheme.primary, label: 'Calories (kcal)'),
-            const SizedBox(width: 24),
+            SizedBox(width: 24),
             _LegendItem(color: AppTheme.blue, label: 'Water (glasses)'),
           ],
         ),
